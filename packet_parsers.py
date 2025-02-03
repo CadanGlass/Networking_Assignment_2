@@ -41,7 +41,7 @@ def parse_ethernet_header(hex_data):
 
     return ether_type, payload
 
-
+# ARP header parsing
 def parse_arp_header(hex_data, arp_offset=14):
     """
     Parses an ARP header starting at 'arp_offset' bytes in hex_data.
@@ -132,10 +132,36 @@ def parse_tcp_header(hex_data):
     print(f"  Flags: {flags_binary} (Binary)")
 
 # UDP Header Parsing
-def parse_udp_header(hex_data):
-    src_port = hex_data[68:72]
-    dest_port = hex_data[72:76]
+def parse_udp_header(hex_data, offset):
+    """
+    Parse a UDP header at 'offset' bytes in `hex_data`.
+    8 bytes for the UDP header => 16 hex chars.
+    Then show leftover payload.
+    """
+    base = offset * 2
+    if len(hex_data) < base + 16:
+        print("Truncated UDP header, skipping parse.")
+        return
 
-    print(f"UDP Header:")
-    print(f"  Source Port: {int(src_port, 16)}")
-    print(f"  Destination Port: {int(dest_port, 16)}")
+    src_port_hex  = hex_data[base : base+4]
+    dest_port_hex = hex_data[base+4 : base+8]
+    length_hex    = hex_data[base+8 : base+12]
+    csum_hex      = hex_data[base+12: base+16]
+
+    src_port_dec  = int(src_port_hex, 16)
+    dest_port_dec = int(dest_port_hex, 16)
+    length_dec    = int(length_hex, 16)
+    checksum_dec  = int(csum_hex, 16)
+
+    print("UDP Header:")
+    # Two column style
+    print(f"  {'Source Port:':<20} {src_port_hex:<6} | {src_port_dec}")
+    print(f"  {'Destination Port:':<20} {dest_port_hex:<6} | {dest_port_dec}")
+    print(f"  {'Length:':<20} {length_hex:<6} | {length_dec}")
+    print(f"  {'Checksum:':<20} {csum_hex:<6} | {checksum_dec}")
+
+    # Optional: Dump leftover payload
+    payload_start = base + 16
+    if len(hex_data) > payload_start:
+        udp_payload_hex = hex_data[payload_start:]
+        print(f"  {'Payload (hex):':<20} {udp_payload_hex}")

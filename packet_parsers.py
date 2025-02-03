@@ -1,67 +1,100 @@
-# Parse Ethernet header
 def parse_ethernet_header(hex_data):
-    dest_mac = ':'.join(hex_data[i:i+2] for i in range(0, 12, 2))
-    source_mac = ':'.join(hex_data[i:i+2] for i in range(12, 24, 2))
+    """
+    Parses the Ethernet header (14 bytes = 28 hex chars).
+    Detects VLAN tagging (0x8100) and calls parse_arp_header with the right offset if EtherType is ARP.
+    """
+    # Destination MAC (6 bytes / 12 hex chars)
+    dest_mac_hex = hex_data[0:12]
+    # Source MAC (6 bytes / 12 hex chars)
+    src_mac_hex = hex_data[12:24]
+    # EtherType (2 bytes / 4 hex chars)
     ether_type = hex_data[24:28]
 
-    print(f"Ethernet Header:")
-    print(f"  {'Destination MAC:':<25} {hex_data[0:12]:<20} | {dest_mac}")
-    print(f"  {'Source MAC:':<25} {hex_data[12:24]:<20} | {source_mac}")
-    print(f"  {'EtherType:':<25} {ether_type:<20} | {int(ether_type, 16)}")
+    # Convert MACs to human-readable
+    dest_mac = ':'.join(dest_mac_hex[i:i + 2] for i in range(0, 12, 2))
+    src_mac = ':'.join(src_mac_hex[i:i + 2] for i in range(0, 12, 2))
 
+    print("Ethernet Header:")
+    print(f"  {'Destination MAC:':<25} {dest_mac_hex:<20} | {dest_mac}")
+    print(f"  {'Source MAC:':<25} {src_mac_hex:<20}  | {src_mac}")
+    print(f"  {'EtherType:':<25} {ether_type:<20}    | {int(ether_type, 16)}")
+
+    # The payload after the Ethernet header
     payload = hex_data[28:]
 
-    # Route payload based on EtherType
-    if ether_type == "0806":  # ARP
-        parse_arp_header(payload)
+    # Check for VLAN Tag (0x8100)
+    if ether_type.lower() == "8100":
+        # VLAN Tag is next 4 bytes => [28:36]
+        vlan_tag = payload[0:8]  # 4 bytes => 8 hex chars
+        # The real EtherType is the next 2 bytes => [36:40]
+        real_etype = payload[8:12]
+
+        print(f"  VLAN Tag Detected: {vlan_tag}")
+        print(f"  Real EtherType:    {real_etype} | {int(real_etype, 16)}")
+
+        # If real EtherType is ARP (0x0806), parse ARP starting at offset=18 bytes
+        if real_etype.lower() == "0806":
+            # Now the ARP header starts at 14 + 4 = 18 bytes => 36 hex chars from start
+            parse_arp_header(hex_data, arp_offset=18)
+        else:
+            print("  VLAN EtherType not ARP, no parser available.")
+
+    # If EtherType is ARP (0x0806) with no VLAN
+    elif ether_type.lower() == "0806":
+        # Standard ARP offset = 14 bytes => 28 hex chars
+        parse_arp_header(hex_data, arp_offset=14)
     else:
-        print(f"  {'Unknown EtherType:':<25} {ether_type:<20} | {int(ether_type, 16)}")
+        print(f"  Unknown EtherType:        {ether_type:<20} | {int(ether_type, 16)}")
         print("  No parser available for this EtherType.")
 
     return ether_type, payload
 
 
-def parse_arp_header(hex_data, arp_offset=28):
+def parse_arp_header(hex_data, arp_offset=14):
     """
-    Parses an ARP header starting at 'arp_offset' in hex_data.
+    Parses an ARP header starting at 'arp_offset' bytes in hex_data.
+    By default, arp_offset=14 for a standard Ethernet frame (no VLAN).
+    If VLAN is present, use arp_offset=18 (14 + 4).
+
     Prints raw hex on the left and interpreted values on the right.
-    By default, arp_offset=28 for a standard Ethernet (14 bytes) + ARP (from byte 14 onward).
     """
 
-    # We expect a minimum of (14 + 28) = 42 bytes = 84 hex chars for a normal ARP-over-Ethernet.
-    # If there's a VLAN tag (4 extra bytes), ARP might start at offset 32, so total 46 bytes => 92 hex chars.
-    min_arp_hex = arp_offset * 2 + 28 * 2  # Offsets + 28 ARP bytes (14 offset => 28 hex chars)
+    # ARP header is 28 bytes => 56 hex chars (hardware+protocol types, sizes, opcode, sender/target)
+    # So we expect at least (arp_offset + 28) bytes total => (arp_offset+28)*2 hex chars.
+    min_arp_hex = (arp_offset + 28) * 2
 
     if len(hex_data) < min_arp_hex:
         print("Truncated ARP packet or unexpected format. Skipping parse.")
         return
 
-    # Extract ARP fields by hex offset
-    hw_type    = hex_data[arp_offset*2     : arp_offset*2 + 4]   # 2 bytes
-    proto_type = hex_data[arp_offset*2 + 4 : arp_offset*2 + 8]   # 2 bytes
-    hw_size    = hex_data[arp_offset*2 + 8 : arp_offset*2 + 10]  # 1 byte
-    proto_size = hex_data[arp_offset*2 +10 : arp_offset*2 + 12]  # 1 byte
-    opcode     = hex_data[arp_offset*2 +12 : arp_offset*2 + 16]  # 2 bytes
+    # Offsets in hex_data, measured in hex chars
+    base = arp_offset * 2
 
-    sender_mac = hex_data[arp_offset*2 +16 : arp_offset*2 + 28]  # 6 bytes
-    sender_ip  = hex_data[arp_offset*2 +28 : arp_offset*2 + 36]  # 4 bytes
-    target_mac = hex_data[arp_offset*2 +36 : arp_offset*2 + 48]  # 6 bytes
-    target_ip  = hex_data[arp_offset*2 +48 : arp_offset*2 + 56]  # 4 bytes
+    hw_type = hex_data[base: base + 4]  # 2 bytes
+    proto_type = hex_data[base + 4: base + 8]  # 2 bytes
+    hw_size = hex_data[base + 8: base + 10]  # 1 byte
+    proto_size = hex_data[base + 10: base + 12]  # 1 byte
+    opcode = hex_data[base + 12: base + 16]  # 2 bytes
 
-    # Convert MAC fields to colons or dashes
-    sender_mac_readable = ':'.join(sender_mac[i:i+2] for i in range(0, 12, 2))
-    target_mac_readable = ':'.join(target_mac[i:i+2] for i in range(0, 12, 2))
+    sender_mac = hex_data[base + 16: base + 28]  # 6 bytes
+    sender_ip = hex_data[base + 28: base + 36]  # 4 bytes
+    target_mac = hex_data[base + 36: base + 48]  # 6 bytes
+    target_ip = hex_data[base + 48: base + 56]  # 4 bytes
 
-    # Convert IP fields to dotted decimal
+    # Convert MAC fields
+    sender_mac_readable = ':'.join(sender_mac[i:i + 2] for i in range(0, 12, 2))
+    target_mac_readable = ':'.join(target_mac[i:i + 2] for i in range(0, 12, 2))
+
+    # Convert IP fields
     try:
-        sender_ip_readable = '.'.join(str(int(sender_ip[i:i+2], 16)) for i in range(0, 8, 2))
-        target_ip_readable = '.'.join(str(int(target_ip[i:i+2], 16)) for i in range(0, 8, 2))
+        sender_ip_readable = '.'.join(str(int(sender_ip[i:i + 2], 16)) for i in range(0, 8, 2))
+        target_ip_readable = '.'.join(str(int(target_ip[i:i + 2], 16)) for i in range(0, 8, 2))
     except ValueError:
         print("Invalid IP fields in ARP (possibly truncated or VLAN-tagged).")
         return
 
     print("ARP Header:")
-    # Two-column style: hex on the left, decimal/meaning on the right
+    # Print raw hex on left, decimal on right
     print(f"  {'Hardware Type:':<20} {hw_type:<12} | {int(hw_type, 16)}")
     print(f"  {'Protocol Type:':<20} {proto_type:<12} | {int(proto_type, 16)}")
     print(f"  {'Hardware Size:':<20} {hw_size:<12} | {int(hw_size, 16)}")
@@ -72,10 +105,6 @@ def parse_arp_header(hex_data, arp_offset=28):
     print(f"  {'Sender IP:':<20} {sender_ip:<12} | {sender_ip_readable}")
     print(f"  {'Target MAC:':<20} {target_mac:<12} | {target_mac_readable}")
     print(f"  {'Target IP:':<20} {target_ip:<12} | {target_ip_readable}")
-
-
-
-
 
 
 # IPv4 Header Parsing

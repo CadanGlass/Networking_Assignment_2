@@ -172,6 +172,8 @@ def parse_ipv4_header(hex_data, offset=14):
         parse_udp_header(hex_data, offset=next_off)
     elif proto_dec == 6:
         parse_tcp_header(hex_data, offset=next_off)
+    elif proto_dec == 1:  # Add this case for ICMP
+        parse_icmp_header(hex_data, offset=next_off)
     else:
         print("    IP protocol not supported in this example.")
 
@@ -277,3 +279,33 @@ def parse_udp_header(hex_data, offset):
     if len(hex_data) > payload_start:
         udp_payload_hex = hex_data[payload_start:]
         print(f"    Payload (hex):          {udp_payload_hex.lower()}")
+
+
+def parse_icmp_header(hex_data, offset=34):
+    """
+    Parse ICMP header (min 8 bytes -> 16 hex chars)
+    Fields: Type (1 byte), Code (1 byte), Checksum (2 bytes), Rest of Header/Payload
+    """
+    base = offset * 2
+    if len(hex_data) < base + 16:
+        print("Truncated ICMP header. Skipping.")
+        return
+
+    # Extract ICMP fields
+    type_hex = hex_data[base : base + 2]
+    code_hex = hex_data[base + 2 : base + 4]
+    checksum_hex = hex_data[base + 4 : base + 8]
+
+    # Convert to decimal
+    type_dec = int(type_hex, 16)
+    code_dec = int(code_hex, 16)
+    checksum_dec = int(checksum_hex, 16)
+
+    # Get payload (rest of packet)
+    payload = hex_data[base + 8:]
+
+    print("ICMP Header:")
+    print(f"    {'Type:':<22} {type_hex:<12} | {type_dec}")
+    print(f"    {'Code:':<22} {code_hex:<12} | {code_dec}")
+    print(f"    {'Checksum:':<22} {checksum_hex:<12} | {checksum_dec}")
+    print(f"    {'Payload (hex):':<22} {payload.lower()}")

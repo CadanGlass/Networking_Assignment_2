@@ -1,19 +1,18 @@
 ############################################################
 # packet_parsers.py
-# Fully aligned, neat formatting for Ethernet, ARP, IPv4, TCP, UDP
 ############################################################
 
 def parse_ethernet_header(hex_data):
     """
-    Parses the standard 14-byte (28 hex chars) Ethernet header.
-    Checks VLAN (0x8100), ARP (0x0806), or IPv4 (0x0800).
+    Parses an Ethernet frame header and identifies the encapsulated protocol.
+    Handles standard Ethernet II frames, VLAN tagged frames, and common protocols like ARP and IPv4.
     """
-    # -- Extract fields --
-    dest_mac_hex = hex_data[0:12]   # 6 bytes => 12 hex
-    src_mac_hex  = hex_data[12:24]  # 6 bytes => 12 hex
-    ether_type   = hex_data[24:28]  # 2 bytes => 4 hex
+    # Split the header into its components
+    dest_mac_hex = hex_data[0:12]   
+    src_mac_hex  = hex_data[12:24]  
+    ether_type   = hex_data[24:28]  
 
-    # -- Convert to readable strings --
+    # Format MAC addresses into human readable format (e.g., AA:BB:CC:DD:EE:FF)
     dest_mac = ':'.join(dest_mac_hex[i:i+2] for i in range(0, 12, 2))
     src_mac  = ':'.join(src_mac_hex[i:i+2] for i in range(0, 12, 2))
     ether_type_dec = int(ether_type, 16)
@@ -65,9 +64,10 @@ def parse_ethernet_header(hex_data):
 
 def parse_arp_header(hex_data, arp_offset=14):
     """
-    ARP header = 28 bytes => 56 hex.
-    Prints columns: field label, raw hex, interpreted value.
+    Parses Address Resolution Protocol (ARP) packets used to map IP addresses to MAC addresses.
+    arp_offset: where ARP header starts (14 bytes after start for normal Ethernet, 18 for VLAN)
     """
+    # Make sure we have enough data for a complete ARP header
     min_len = (arp_offset + 28) * 2
     if len(hex_data) < min_len:
         print("Truncated ARP or unexpected format. Skipping.")
@@ -118,15 +118,15 @@ def parse_arp_header(hex_data, arp_offset=14):
 
 def parse_ipv4_header(hex_data, offset=14):
     """
-    IPv4 header is min 20 bytes => 40 hex. Parse all standard fields including
-    total length, flags, fragment offset, and IPs.
+    Parses IPv4 headers and identifies the higher layer protocol (TCP, UDP, ICMP).
+    offset: where IP header starts (14 bytes after start for normal Ethernet, 18 for VLAN)
     """
     base = offset * 2
     if len(hex_data) < base + 40:
         print("Truncated IP or unexpected format. Skipping.")
         return
 
-    # Extract all IPv4 fields
+    # Pull out the header fields we care about
     version_ihl_hex = hex_data[base : base + 2]
     total_len_hex = hex_data[base + 4 : base + 8]
     flags_frag_hex = hex_data[base + 12 : base + 16]
@@ -134,7 +134,7 @@ def parse_ipv4_header(hex_data, offset=14):
     src_ip_hex = hex_data[base + 24 : base + 32]
     dst_ip_hex = hex_data[base + 32 : base + 40]
 
-    # Parse version and IHL
+    # First byte contains both version (upper 4 bits) and header length (lower 4 bits)
     vi = int(version_ihl_hex, 16)
     version = (vi >> 4) & 0xF
     ihl = vi & 0xF
@@ -179,13 +179,16 @@ def parse_ipv4_header(hex_data, offset=14):
 
 
 def parse_tcp_header(hex_data, offset=34):
-    """Parse TCP header."""
+    """
+    Parses TCP headers, extracting ports, sequence numbers, flags and options.
+    Shows the state of the TCP connection through various control flags.
+    """
     base = offset * 2
     if len(hex_data) < base + 40:
         print("Truncated TCP header. Skipping.")
         return
 
-    # Extract and convert all fields
+    # Extract the main TCP header fields
     src_port_hex = hex_data[base : base+4]
     dst_port_hex = hex_data[base+4 : base+8]
     seq_hex = hex_data[base+8 : base+16]
@@ -249,14 +252,15 @@ def parse_tcp_header(hex_data, offset=34):
 
 def parse_udp_header(hex_data, offset):
     """
-    Parse the UDP header (8 bytes -> 16 hex chars) starting at `offset` bytes in hex_data.
+    Parses UDP headers - a simpler alternative to TCP for applications that don't need
+    guaranteed delivery or connection state.
     """
     base = offset * 2
     if len(hex_data) < base + 16:
         print("Truncated UDP header. Skipping.")
         return
 
-    # Extract the 4 fields (2 bytes each)
+    # UDP has a simple 8-byte header with just ports, length, and checksum
     src_port_hex = hex_data[base : base + 4]
     dst_port_hex = hex_data[base + 4 : base + 8]
     length_hex   = hex_data[base + 8 : base + 12]
@@ -283,15 +287,15 @@ def parse_udp_header(hex_data, offset):
 
 def parse_icmp_header(hex_data, offset=34):
     """
-    Parse ICMP header (min 8 bytes -> 16 hex chars)
-    Fields: Type (1 byte), Code (1 byte), Checksum (2 bytes), Rest of Header/Payload
+    Parses ICMP messages used for network diagnostics and error reporting.
+    Common types include echo request/reply (ping), destination unreachable, etc.
     """
     base = offset * 2
     if len(hex_data) < base + 16:
         print("Truncated ICMP header. Skipping.")
         return
 
-    # Extract ICMP fields
+    # ICMP header starts with type and code that indicate the message purpose
     type_hex = hex_data[base : base + 2]
     code_hex = hex_data[base + 2 : base + 4]
     checksum_hex = hex_data[base + 4 : base + 8]

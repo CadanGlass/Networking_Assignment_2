@@ -23,44 +23,31 @@ def parse_ethernet_header(hex_data):
 
 # Function to parse ARP header from hex data
 def parse_arp_header(hex_data):
-    """
-    Parses an ARP header starting at offset 28 in hex_data.
-    Prints raw hex on the left and interpreted values on the right.
-    """
+    hw_type = hex_data[28:32]
+    proto_type = hex_data[32:36]
+    hw_size = hex_data[36:38]
+    proto_size = hex_data[38:40]
+    opcode = hex_data[40:44]
+    sender_mac = hex_data[44:56]
+    sender_ip = hex_data[56:64]
+    target_mac = hex_data[64:76]
+    target_ip = hex_data[76:84]
 
-    # Extract ARP fields by hex offset
-    hw_type    = hex_data[28:32]   # 2 bytes
-    proto_type = hex_data[32:36]   # 2 bytes
-    hw_size    = hex_data[36:38]   # 1 byte
-    proto_size = hex_data[38:40]   # 1 byte
-    opcode     = hex_data[40:44]   # 2 bytes
+    sender_mac_readable = ':'.join(sender_mac[i:i + 2] for i in range(0, 12, 2))
+    sender_ip_readable = '.'.join(str(int(sender_ip[i:i + 2], 16)) for i in range(0, 8, 2))
+    target_mac_readable = ':'.join(target_mac[i:i + 2] for i in range(0, 12, 2))
+    target_ip_readable = '.'.join(str(int(target_ip[i:i + 2], 16)) for i in range(0, 8, 2))
 
-    sender_mac = hex_data[44:56]   # 6 bytes
-    sender_ip  = hex_data[56:64]   # 4 bytes
-    target_mac = hex_data[64:76]   # 6 bytes
-    target_ip  = hex_data[76:84]   # 4 bytes
-
-    # Convert raw hex MAC -> dash or colon separated
-    # (Teacher’s example uses colons, so adjust as needed)
-    sender_mac_readable = ':'.join(sender_mac[i:i+2] for i in range(0, 12, 2))
-    target_mac_readable = ':'.join(target_mac[i:i+2] for i in range(0, 12, 2))
-
-    # Convert raw hex IP -> dotted decimal
-    sender_ip_readable = '.'.join(str(int(sender_ip[i:i+2], 16)) for i in range(0, 8, 2))
-    target_ip_readable = '.'.join(str(int(target_ip[i:i+2], 16)) for i in range(0, 8, 2))
-
-    print("ARP Header:")
-    # Two-column style: hex on the left, decimal/meaning on the right
-    print(f"  {'Hardware Type:':<20} {hw_type:<12} | {int(hw_type, 16)}")
-    print(f"  {'Protocol Type:':<20} {proto_type:<12} | {int(proto_type, 16)}")
-    print(f"  {'Hardware Size:':<20} {hw_size:<12} | {int(hw_size, 16)}")
-    print(f"  {'Protocol Size:':<20} {proto_size:<12} | {int(proto_size, 16)}")
-    print(f"  {'Opcode:':<20} {opcode:<12} | {int(opcode, 16)}")
-
-    print(f"  {'Sender MAC:':<20} {sender_mac:<12} | {sender_mac_readable}")
-    print(f"  {'Sender IP:':<20} {sender_ip:<12} | {sender_ip_readable}")
-    print(f"  {'Target MAC:':<20} {target_mac:<12} | {target_mac_readable}")
-    print(f"  {'Target IP:':<20} {target_ip:<12} | {target_ip_readable}")
+    print(f"ARP Header:")
+    print(f"  Hardware Type: {hw_type}")
+    print(f"  Protocol Type: {proto_type}")
+    print(f"  Hardware Size: {hw_size}")
+    print(f"  Protocol Size: {proto_size}")
+    print(f"  Opcode: {opcode}")
+    print(f"  Sender MAC: {sender_mac_readable}")
+    print(f"  Sender IP: {sender_ip_readable}")
+    print(f"  Target MAC: {target_mac_readable}")
+    print(f"  Target IP: {target_ip_readable}")
 
 
 

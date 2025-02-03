@@ -177,15 +177,13 @@ def parse_ipv4_header(hex_data, offset=14):
 
 
 def parse_tcp_header(hex_data, offset=34):
-    """
-    Parse TCP header with all flags and fields matching the format.
-    """
+    """Parse TCP header."""
     base = offset * 2
     if len(hex_data) < base + 40:
         print("Truncated TCP header. Skipping.")
         return
 
-    # Extract TCP fields
+    # Extract and convert all fields
     src_port_hex = hex_data[base : base+4]
     dst_port_hex = hex_data[base+4 : base+8]
     seq_hex = hex_data[base+8 : base+16]
@@ -195,7 +193,7 @@ def parse_tcp_header(hex_data, offset=34):
     checksum_hex = hex_data[base+32 : base+36]
     urgent_ptr_hex = hex_data[base+36 : base+40]
 
-    # Convert values
+    # Convert all values
     src_port = int(src_port_hex, 16)
     dst_port = int(dst_port_hex, 16)
     seq_num = int(seq_hex, 16)
@@ -204,12 +202,10 @@ def parse_tcp_header(hex_data, offset=34):
     checksum = int(checksum_hex, 16)
     urgent_ptr = int(urgent_ptr_hex, 16)
     
-    # Parse data offset and flags
     offset_flags = int(offset_flags_hex, 16)
     data_offset = (offset_flags >> 12) & 0xF
     data_offset_bytes = data_offset * 4
     
-    # TCP Flags
     flags = offset_flags & 0x1FF
     ns  = (flags >> 8) & 0x1
     cwr = (flags >> 7) & 0x1
@@ -222,13 +218,13 @@ def parse_tcp_header(hex_data, offset=34):
     fin = flags & 0x1
 
     print("TCP Header:")
-    print(f"    Source Port:            {src_port_hex.lower()}      | {src_port}")
-    print(f"    Destination Port:       {dst_port_hex.lower()}      | {dst_port}")
-    print(f"    Sequence Number:        {seq_hex.lower()}  | {seq_num}")
-    print(f"    Acknowledgment Number:  {ack_hex.lower()}  | {ack_num}")
-    print(f"    Data Offset:           {data_offset}      | {data_offset_bytes} bytes")
-    print(f"    Reserved:              0b0     | 0")
-    print(f"    Flags:                 0b{bin(flags)[2:].zfill(9)}     | {flags}")
+    print(f"    Source Port:            {src_port_hex.lower()}                | {src_port}")
+    print(f"    Destination Port:       {dst_port_hex.lower()}                | {dst_port}")
+    print(f"    Sequence Number:        {seq_hex.lower()}        | {seq_num}")
+    print(f"    Acknowledgment Number:  {ack_hex.lower()}        | {ack_num}")
+    print(f"    Data Offset:           {data_offset}                    | {data_offset_bytes} bytes")
+    print(f"    Reserved:              0b0                   | 0")
+    print(f"    Flags:                 0b{bin(flags)[2:].zfill(9)}           | {flags}")
     print(f"        NS:                {ns}")
     print(f"        CWR:               {cwr}")
     print(f"        ECE:               {ece}")
@@ -238,9 +234,9 @@ def parse_tcp_header(hex_data, offset=34):
     print(f"        RST:               {rst}")
     print(f"        SYN:               {syn}")
     print(f"        FIN:               {fin}")
-    print(f"    Window Size:           {window_hex.lower()}      | {window}")
-    print(f"    Checksum:              {checksum_hex.lower()}      | {checksum}")
-    print(f"    Urgent Pointer:        {urgent_ptr_hex.lower()}      | {urgent_ptr}")
+    print(f"    Window Size:           {window_hex.lower()}                | {window}")
+    print(f"    Checksum:              {checksum_hex.lower()}                | {checksum}")
+    print(f"    Urgent Pointer:        {urgent_ptr_hex.lower()}                | {urgent_ptr}")
 
     # Print payload if present
     payload_start = base + (data_offset * 8)

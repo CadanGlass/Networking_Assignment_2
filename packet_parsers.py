@@ -118,35 +118,62 @@ def parse_arp_header(hex_data, arp_offset=14):
 
 def parse_ipv4_header(hex_data, offset=14):
     """
-    IPv4 header is min 20 bytes => 40 hex. We parse version, IHL, protocol,
-    then pass control to TCP or UDP parser if recognized.
+    IPv4 header is min 20 bytes => 40 hex. Parse all standard fields including
+    total length, flags, fragment offset, and IPs.
     """
     base = offset * 2
     if len(hex_data) < base + 40:
         print("Truncated IP or unexpected format. Skipping.")
         return
 
+    # Extract all IPv4 fields
     version_ihl_hex = hex_data[base : base + 2]
+    total_len_hex = hex_data[base + 4 : base + 8]
+    flags_frag_hex = hex_data[base + 12 : base + 16]
+    proto_hex = hex_data[base + 18 : base + 20]
+    src_ip_hex = hex_data[base + 24 : base + 32]
+    dst_ip_hex = hex_data[base + 32 : base + 40]
+
+    # Parse version and IHL
     vi = int(version_ihl_hex, 16)
     version = (vi >> 4) & 0xF
-    ihl     = vi & 0xF
+    ihl = vi & 0xF
     ip_len_bytes = ihl * 4
 
-    proto_hex = hex_data[base + 18 : base + 20]
+    # Convert other fields
+    total_len_dec = int(total_len_hex, 16)
+    flags_frag = int(flags_frag_hex, 16)
+    reserved = (flags_frag >> 15) & 0x1
+    df_flag = (flags_frag >> 14) & 0x1
+    mf_flag = (flags_frag >> 13) & 0x1
+    frag_offset = flags_frag & 0x1FFF
     proto_dec = int(proto_hex, 16)
 
-    print("IPv4 Header:")
-    print(f"  {'Version:':<22} {version}")
-    print(f"  {'IHL:':<22} {ihl} ({ip_len_bytes} bytes)")
-    print(f"  {'Protocol:':<22} {proto_hex:<4} | {proto_dec} (1=ICMP,6=TCP,17=UDP)")
+    # Convert IPs to dotted decimal
+    src_ip = '.'.join(str(int(src_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
+    dst_ip = '.'.join(str(int(dst_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
 
+    print("IPv4 Header:")
+    print(f"    Version:               {version}         | {version}")
+    print(f"    Header Length:         {ihl}         | {ip_len_bytes} bytes")
+    print(f"    Total Length:          {total_len_hex}        | {total_len_dec}")
+    print(f"    Flags & Frag Offset:   {flags_frag_hex}        | {hex(flags_frag)[2:].zfill(4)}")
+    print(f"        Reserved:          {reserved}")
+    print(f"        DF (Do not Fragment): {df_flag}")
+    print(f"        MF (More Fragments): {mf_flag}")
+    print(f"        Fragment Offset:   0x{frag_offset:x} | {frag_offset}")
+    print(f"    Protocol:              {proto_hex}        | {proto_dec}")
+    print(f"    Source IP:             {src_ip_hex}        | {src_ip}")
+    print(f"    Destination IP:        {dst_ip_hex}        | {dst_ip}")
+
+    # Continue with next protocol parser if recognized
     next_off = offset + ip_len_bytes
     if proto_dec == 17:
         parse_udp_header(hex_data, offset=next_off)
     elif proto_dec == 6:
         parse_tcp_header(hex_data, offset=next_off)
     else:
-        print("IP protocol not supported in this example.")
+        print("    IP protocol not supported in this example.")
 
 
 def parse_tcp_header(hex_data, offset=34):

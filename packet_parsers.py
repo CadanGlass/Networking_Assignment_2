@@ -197,32 +197,34 @@ def parse_tcp_header(hex_data, offset=34):
 
 def parse_udp_header(hex_data, offset):
     """
-    UDP header is 8 bytes => 16 hex. Prints columns for
-    source port, dest port, length, checksum, leftover payload.
+    Parse the UDP header (8 bytes -> 16 hex chars) starting at `offset` bytes in hex_data.
+    Prints columns for source port, destination port, length, checksum, and leftover payload.
     """
     base = offset * 2
     if len(hex_data) < base + 16:
         print("Truncated UDP header. Skipping.")
         return
 
-    sp_hex = hex_data[base     : base+4]
-    dp_hex = hex_data[base + 4 : base+8]
-    len_hex= hex_data[base + 8 : base+12]
-    sum_hex= hex_data[base +12 : base+16]
+    # Extract the 4 fields (2 bytes each)
+    src_port_hex = hex_data[base : base + 4]
+    dst_port_hex = hex_data[base + 4 : base + 8]
+    length_hex   = hex_data[base + 8 : base + 12]
+    csum_hex     = hex_data[base +12 : base +16]
 
-    sp_dec  = int(sp_hex, 16)
-    dp_dec  = int(dp_hex, 16)
-    l_dec   = int(len_hex, 16)
-    sum_dec = int(sum_hex, 16)
+    # Convert hex -> decimal
+    src_port_dec = int(src_port_hex, 16)
+    dst_port_dec = int(dst_port_hex, 16)
+    length_dec   = int(length_hex,   16)
+    csum_dec     = int(csum_hex,     16)
 
     print("UDP Header:")
-    print(f"  {'Source Port:':<22} {sp_hex:<6} | {sp_dec}")
-    print(f"  {'Destination Port:':<22} {dp_hex:<6} | {dp_dec}")
-    print(f"  {'Length:':<22} {len_hex:<6} | {l_dec}")
-    print(f"  {'Checksum:':<22} {sum_hex:<6} | {sum_dec}")
+    print(f"  {'Source Port:':<22} {src_port_hex:<6} | {src_port_dec}")
+    print(f"  {'Destination Port:':<22} {dst_port_hex:<6} | {dst_port_dec}")
+    print(f"  {'Length:':<22} {length_hex:<6}   | {length_dec}")
+    print(f"  {'Checksum:':<22} {csum_hex:<6}    | {csum_dec}")
 
-    # Optional payload
-    pay_start = base + 16
-    if len(hex_data) > pay_start:
-        payload_hex = hex_data[pay_start:]
-        print(f"  {'Payload (hex):':<22} {payload_hex}")
+    # Remainder of packet is UDP payload
+    payload_start = base + 16
+    if len(hex_data) > payload_start:
+        udp_payload_hex = hex_data[payload_start:]
+        print(f"  {'Payload (hex):':<22} {udp_payload_hex}")

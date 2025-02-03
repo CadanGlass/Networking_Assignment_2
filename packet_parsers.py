@@ -154,17 +154,17 @@ def parse_ipv4_header(hex_data, offset=14):
     dst_ip = '.'.join(str(int(dst_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
 
     print("IPv4 Header:")
-    print(f"    Version:               {version}         | {version}")
-    print(f"    Header Length:         {ihl}         | {ip_len_bytes} bytes")
-    print(f"    Total Length:          {total_len_hex}        | {total_len_dec}")
-    print(f"    Flags & Frag Offset:   {flags_frag_hex}        | {hex(flags_frag)[2:].zfill(4)}")
-    print(f"        Reserved:          {reserved}")
+    print(f"    Version:                {version:<8}      | {version}")
+    print(f"    Header Length:          {ihl:<8}      | {ip_len_bytes} bytes")
+    print(f"    Total Length:           {total_len_hex:<8}      | {total_len_dec}")
+    print(f"    Flags & Frag Offset:    {flags_frag_hex:<8}      | {hex(flags_frag)[2:].zfill(4)}")
+    print(f"        Reserved:           {reserved}")
     print(f"        DF (Do not Fragment): {df_flag}")
     print(f"        MF (More Fragments): {mf_flag}")
-    print(f"        Fragment Offset:   0x{frag_offset:x} | {frag_offset}")
-    print(f"    Protocol:              {proto_hex}        | {proto_dec}")
-    print(f"    Source IP:             {src_ip_hex}        | {src_ip}")
-    print(f"    Destination IP:        {dst_ip_hex}        | {dst_ip}")
+    print(f"        Fragment Offset:    0x{frag_offset:x} | {frag_offset}")
+    print(f"    Protocol:               {proto_hex:<8}      | {proto_dec}")
+    print(f"    Source IP:              {src_ip_hex:<8}      | {src_ip}")
+    print(f"    Destination IP:         {dst_ip_hex:<8}      | {dst_ip}")
 
     # Continue with next protocol parser if recognized
     next_off = offset + ip_len_bytes
@@ -225,7 +225,6 @@ def parse_tcp_header(hex_data, offset=34):
 def parse_udp_header(hex_data, offset):
     """
     Parse the UDP header (8 bytes -> 16 hex chars) starting at `offset` bytes in hex_data.
-    Prints columns for source port, destination port, length, checksum, and leftover payload.
     """
     base = offset * 2
     if len(hex_data) < base + 16:
@@ -236,22 +235,22 @@ def parse_udp_header(hex_data, offset):
     src_port_hex = hex_data[base : base + 4]
     dst_port_hex = hex_data[base + 4 : base + 8]
     length_hex   = hex_data[base + 8 : base + 12]
-    csum_hex     = hex_data[base +12 : base +16]
+    csum_hex     = hex_data[base + 12 : base + 16]
 
     # Convert hex -> decimal
     src_port_dec = int(src_port_hex, 16)
     dst_port_dec = int(dst_port_hex, 16)
-    length_dec   = int(length_hex,   16)
-    csum_dec     = int(csum_hex,     16)
+    length_dec   = int(length_hex, 16)
+    csum_dec     = int(csum_hex, 16)
 
     print("UDP Header:")
-    print(f"    Source Port:          {src_port_hex.lower()}        | {src_port_dec}")
-    print(f"    Destination Port:     {dst_port_hex.lower()}        | {dst_port_dec}")
-    print(f"    Length:               {length_hex.lower()}        | {length_dec}")
-    print(f"    Checksum:             {csum_hex.lower()}        | {csum_dec}")
+    print(f"    Source Port:            {src_port_hex.lower():<8}      | {src_port_dec}")
+    print(f"    Destination Port:       {dst_port_hex.lower():<8}      | {dst_port_dec}")
+    print(f"    Length:                 {length_hex.lower():<8}      | {length_dec}")
+    print(f"    Checksum:               {csum_hex.lower():<8}      | {csum_dec}")
 
     # Remainder of packet is UDP payload
     payload_start = base + 16
     if len(hex_data) > payload_start:
         udp_payload_hex = hex_data[payload_start:]
-        print(f"    Payload (hex):         {udp_payload_hex.lower()}")
+        print(f"    Payload (hex):          {udp_payload_hex.lower()}")

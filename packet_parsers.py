@@ -19,9 +19,9 @@ def parse_ethernet_header(hex_data):
     ether_type_dec = int(ether_type, 16)
 
     print("Ethernet Header:")
-    print(f"  {'Destination MAC:':<22} {dest_mac_hex:<12} | {dest_mac}")
-    print(f"  {'Source MAC:':<22} {src_mac_hex:<12} | {src_mac}")
-    print(f"  {'EtherType:':<22} {ether_type:<12} | {ether_type_dec}")
+    print(f"  {'Destination MAC:':<22} {dest_mac_hex:<12}  | {dest_mac}")
+    print(f"  {'Source MAC:':<22} {src_mac_hex:<12}  | {src_mac}")
+    print(f"  {'EtherType:':<22} {ether_type:<12}  | {ether_type_dec}")
 
     # -- Payload after Ethernet --
     payload = hex_data[28:]
@@ -154,9 +154,9 @@ def parse_ipv4_header(hex_data, offset=14):
     dst_ip = '.'.join(str(int(dst_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
 
     print("IPv4 Header:")
-    print(f"    Version:                4         | {version}")
-    print(f"    Header Length:          5         | {ip_len_bytes} bytes")
-    print(f"    Total Length:           {total_len_hex}      | {total_len_dec}")
+    print(f"    Version:                4          | {version}")
+    print(f"    Header Length:          5          | {ip_len_bytes} bytes")
+    print(f"    Total Length:           {total_len_hex}       | {total_len_dec}")
     print(f"    Flags & Frag Offset:    {flags_frag_hex}      | {hex(flags_frag)[2:].zfill(4)}")
     print(f"        Reserved:           {reserved}")
     print(f"        DF (Do not Fragment): {df_flag}")

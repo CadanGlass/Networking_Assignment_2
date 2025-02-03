@@ -200,6 +200,9 @@ def parse_tcp_header(hex_data, offset=34):
     dst_port = int(dst_port_hex, 16)
     seq_num = int(seq_hex, 16)
     ack_num = int(ack_hex, 16)
+    window = int(window_hex, 16)
+    checksum = int(checksum_hex, 16)
+    urgent_ptr = int(urgent_ptr_hex, 16)
     
     # Parse data offset and flags
     offset_flags = int(offset_flags_hex, 16)

@@ -162,7 +162,7 @@ def parse_ipv4_header(hex_data, offset=14):
     print(f"        DF (Do not Fragment): {df_flag}")
     print(f"        MF (More Fragments): {mf_flag}")
     print(f"        Fragment Offset:    0x{frag_offset:x} | {frag_offset}")
-    print(f"    Protocol:               11         | {proto_dec}")
+    print(f"    Protocol:               11          | {proto_dec}")
     print(f"    Source IP:              {src_ip_hex}    | {src_ip}")
     print(f"    Destination IP:         {dst_ip_hex}    | {dst_ip}")
 

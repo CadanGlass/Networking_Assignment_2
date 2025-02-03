@@ -3,11 +3,8 @@ def parse_ethernet_header(hex_data):
     Parses the Ethernet header (14 bytes = 28 hex chars).
     Detects VLAN tagging (0x8100) and calls parse_arp_header with the right offset if EtherType is ARP.
     """
-    # Destination MAC (6 bytes / 12 hex chars)
     dest_mac_hex = hex_data[0:12]
-    # Source MAC (6 bytes / 12 hex chars)
     src_mac_hex = hex_data[12:24]
-    # EtherType (2 bytes / 4 hex chars)
     ether_type = hex_data[24:28]
 
     # Convert MACs to human-readable
@@ -19,29 +16,24 @@ def parse_ethernet_header(hex_data):
     print(f"  {'Source MAC:':<25} {src_mac_hex:<20}  | {src_mac}")
     print(f"  {'EtherType:':<25} {ether_type:<20}    | {int(ether_type, 16)}")
 
-    # The payload after the Ethernet header
+
     payload = hex_data[28:]
 
-    # Check for VLAN Tag (0x8100)
     if ether_type.lower() == "8100":
-        # VLAN Tag is next 4 bytes => [28:36]
         vlan_tag = payload[0:8]  # 4 bytes => 8 hex chars
-        # The real EtherType is the next 2 bytes => [36:40]
+
         real_etype = payload[8:12]
 
         print(f"  VLAN Tag Detected: {vlan_tag}")
         print(f"  Real EtherType:    {real_etype} | {int(real_etype, 16)}")
 
-        # If real EtherType is ARP (0x0806), parse ARP starting at offset=18 bytes
         if real_etype.lower() == "0806":
             # Now the ARP header starts at 14 + 4 = 18 bytes => 36 hex chars from start
             parse_arp_header(hex_data, arp_offset=18)
         else:
             print("  VLAN EtherType not ARP, no parser available.")
 
-    # If EtherType is ARP (0x0806) with no VLAN
     elif ether_type.lower() == "0806":
-        # Standard ARP offset = 14 bytes => 28 hex chars
         parse_arp_header(hex_data, arp_offset=14)
     else:
         print(f"  Unknown EtherType:        {ether_type:<20} | {int(ether_type, 16)}")
@@ -59,8 +51,6 @@ def parse_arp_header(hex_data, arp_offset=14):
     Prints raw hex on the left and interpreted values on the right.
     """
 
-    # ARP header is 28 bytes => 56 hex chars (hardware+protocol types, sizes, opcode, sender/target)
-    # So we expect at least (arp_offset + 28) bytes total => (arp_offset+28)*2 hex chars.
     min_arp_hex = (arp_offset + 28) * 2
 
     if len(hex_data) < min_arp_hex:
@@ -81,11 +71,9 @@ def parse_arp_header(hex_data, arp_offset=14):
     target_mac = hex_data[base + 36: base + 48]  # 6 bytes
     target_ip = hex_data[base + 48: base + 56]  # 4 bytes
 
-    # Convert MAC fields
     sender_mac_readable = ':'.join(sender_mac[i:i + 2] for i in range(0, 12, 2))
     target_mac_readable = ':'.join(target_mac[i:i + 2] for i in range(0, 12, 2))
 
-    # Convert IP fields
     try:
         sender_ip_readable = '.'.join(str(int(sender_ip[i:i + 2], 16)) for i in range(0, 8, 2))
         target_ip_readable = '.'.join(str(int(target_ip[i:i + 2], 16)) for i in range(0, 8, 2))

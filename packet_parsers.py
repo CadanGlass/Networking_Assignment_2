@@ -21,12 +21,33 @@ def parse_ethernet_header(hex_data):
     return ether_type, payload
 
 
-# Parse ARP header
+# Function to parse ARP header from hex data
 def parse_arp_header(hex_data):
-    hardware_type = int(hex_data[:4], 16)
+    hw_type = hex_data[28:32]
+    proto_type = hex_data[32:36]
+    hw_size = hex_data[36:38]
+    proto_size = hex_data[38:40]
+    opcode = hex_data[40:44]
+    sender_mac = hex_data[44:56]
+    sender_ip = hex_data[56:64]
+    target_mac = hex_data[64:76]
+    target_ip = hex_data[76:84]
+
+    sender_mac_readable = ':'.join(sender_mac[i:i + 2] for i in range(0, 12, 2))
+    sender_ip_readable = '.'.join(str(int(sender_ip[i:i + 2], 16)) for i in range(0, 8, 2))
+    target_mac_readable = ':'.join(target_mac[i:i + 2] for i in range(0, 12, 2))
+    target_ip_readable = '.'.join(str(int(target_ip[i:i + 2], 16)) for i in range(0, 8, 2))
 
     print(f"ARP Header:")
-    print(f"  {'Hardware Type:':<25} {hex_data[:4]:<20} | {hardware_type}")
+    print(f"  Hardware Type: {hw_type}")
+    print(f"  Protocol Type: {proto_type}")
+    print(f"  Hardware Size: {hw_size}")
+    print(f"  Protocol Size: {proto_size}")
+    print(f"  Opcode: {opcode}")
+    print(f"  Sender MAC: {sender_mac_readable}")
+    print(f"  Sender IP: {sender_ip_readable}")
+    print(f"  Target MAC: {target_mac_readable}")
+    print(f"  Target IP: {target_ip_readable}")
 
 
 # IPv4 Header Parsing

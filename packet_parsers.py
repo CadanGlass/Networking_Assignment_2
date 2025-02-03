@@ -104,16 +104,16 @@ def parse_arp_header(hex_data, arp_offset=14):
         return
 
     print("ARP Header:")
-    print(f"  {'Hardware Type:':<22} {hw_type:<12}  | {hw_type_dec}")
-    print(f"  {'Protocol Type:':<22} {proto_type:<12}  | {proto_type_dec}")
-    print(f"  {'Hardware Size:':<22} {hw_size:<12}  | {hw_size_dec}")
-    print(f"  {'Protocol Size:':<22} {proto_size:<12}  | {proto_size_dec}")
-    print(f"  {'Opcode:':<22} {opcode:<12}  | {opcode_dec}")
+    print(f"  {'Hardware Type:':<22} {hw_type:<12}   | {hw_type_dec}")
+    print(f"  {'Protocol Type:':<22} {proto_type:<12}   | {proto_type_dec}")
+    print(f"  {'Hardware Size:':<22} {hw_size:<12}   | {hw_size_dec}")
+    print(f"  {'Protocol Size:':<22} {proto_size:<12}   | {proto_size_dec}")
+    print(f"  {'Opcode:':<22} {opcode:<12}   | {opcode_dec}")
 
-    print(f"  {'Sender MAC:':<22} {sender_mac:<12}  | {sender_mac_read}")
-    print(f"  {'Sender IP:':<22} {sender_ip:<12}  | {sender_ip_read}")
-    print(f"  {'Target MAC:':<22} {target_mac:<12}  | {target_mac_read}")
-    print(f"  {'Target IP:':<22} {target_ip:<12}  | {target_ip_read}")
+    print(f"  {'Sender MAC:':<22} {sender_mac:<12}   | {sender_mac_read}")
+    print(f"  {'Sender IP:':<22} {sender_ip:<12}   | {sender_ip_read}")
+    print(f"  {'Target MAC:':<22} {target_mac:<12}   | {target_mac_read}")
+    print(f"  {'Target IP:':<22} {target_ip:<12}   | {target_ip_read}")
 
 
 def parse_ipv4_header(hex_data, offset=14):

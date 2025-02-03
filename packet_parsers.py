@@ -217,19 +217,15 @@ def parse_tcp_header(hex_data, offset=34):
     rst = (flags >> 2) & 0x1
     syn = (flags >> 1) & 0x1
     fin = flags & 0x1
-    
-    window = int(window_hex, 16)
-    checksum = int(checksum_hex, 16)
-    urgent_ptr = int(urgent_ptr_hex, 16)
 
     print("TCP Header:")
-    print(f"    Source Port:            {src_port_hex.lower()}      | {src_port}")
-    print(f"    Destination Port:       {dst_port_hex.lower()}      | {dst_port}")
+    print(f"    Source Port:            {src_port_hex.lower()}          | {src_port}")
+    print(f"    Destination Port:       {dst_port_hex.lower()}          | {dst_port}")
     print(f"    Sequence Number:        {seq_hex.lower()}      | {seq_num}")
     print(f"    Acknowledgment Number:  {ack_hex.lower()}      | {ack_num}")
-    print(f"    Data Offset:           {data_offset}         | {data_offset_bytes} bytes")
-    print(f"    Reserved:              0b0       | 0")
-    print(f"    Flags:                 0b{bin(flags)[2:].zfill(9)}      | {flags}")
+    print(f"    Data Offset:           {data_offset}              | {data_offset_bytes} bytes")
+    print(f"    Reserved:              0b0            | 0")
+    print(f"    Flags:                 0b{bin(flags)[2:].zfill(9)}    | {flags}")
     print(f"        NS:                {ns}")
     print(f"        CWR:               {cwr}")
     print(f"        ECE:               {ece}")
@@ -239,12 +235,12 @@ def parse_tcp_header(hex_data, offset=34):
     print(f"        RST:               {rst}")
     print(f"        SYN:               {syn}")
     print(f"        FIN:               {fin}")
-    print(f"    Window Size:           {window_hex.lower()}      | {window}")
-    print(f"    Checksum:              {checksum_hex.lower()}      | {checksum}")
-    print(f"    Urgent Pointer:        {urgent_ptr_hex.lower()}      | {urgent_ptr}")
+    print(f"    Window Size:           {window_hex.lower()}          | {window}")
+    print(f"    Checksum:              {checksum_hex.lower()}          | {checksum}")
+    print(f"    Urgent Pointer:        {urgent_ptr_hex.lower()}          | {urgent_ptr}")
 
     # Print payload if present
-    payload_start = base + (data_offset * 8)  # data_offset is in 4-byte words
+    payload_start = base + (data_offset * 8)
     if len(hex_data) > payload_start:
         payload = hex_data[payload_start:]
         print(f"    Payload (hex):          {payload.lower()}")

@@ -120,19 +120,34 @@ def capture_on_all_interfaces(capture_filter, packet_count):
             thread.join()
 
 
+def positive_int(value):
+    """
+    Custom argparse type to validate positive integers
+    """
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError(f"Packet count must be greater than 0, got {value}")
+    return ivalue
 
 # Main execution with argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Packet sniffer using Scapy with manual HEX parsing")
     parser.add_argument(
-        "-i", "--interface", required=True, help="The interface to capture packets on (e.g., eth0, wlan0, any)"
+        "-i", "--interface", 
+        required=True, 
+        help="The interface to capture packets on (e.g., eth0, wlan0, any)"
     )
     parser.add_argument(
-        "-f", "--filter", help="BPF filter to apply (e.g., 'tcp and port 80'). If not provided, captures all packets."
+        "-f", "--filter",
+        help="BPF filter to apply (e.g., 'tcp and port 80'). If not provided, captures all packets."
     )
     parser.add_argument(
-        "-c", "--count", type=int, required=True, help="Number of packets to capture (default: 1)"
+        "-c", "--count",
+        type=positive_int,  # Use our custom validator
+        required=True,
+        help="Number of packets to capture (must be greater than 0)"
     )
+
     args = parser.parse_args()
 
     if args.interface.lower() == "any":

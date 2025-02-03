@@ -267,10 +267,10 @@ def parse_udp_header(hex_data, offset):
     csum_dec     = int(csum_hex, 16)
 
     print("UDP Header:")
-    print(f"    Source Port:            {src_port_hex.lower()}       | {src_port_dec}")
-    print(f"    Destination Port:       {dst_port_hex.lower()}       | {dst_port_dec}")
-    print(f"    Length:                 {length_hex.lower()}       | {length_dec}")
-    print(f"    Checksum:               {csum_hex.lower()}       | {csum_dec}")
+    print(f"    Source Port:            {src_port_hex.lower()}        | {src_port_dec}")
+    print(f"    Destination Port:       {dst_port_hex.lower()}        | {dst_port_dec}")
+    print(f"    Length:                 {length_hex.lower()}        | {length_dec}")
+    print(f"    Checksum:               {csum_hex.lower()}        | {csum_dec}")
 
     # Remainder of packet is UDP payload
     payload_start = base + 16

@@ -157,7 +157,7 @@ def parse_ipv4_header(hex_data, offset=14):
     print(f"    Version:                4           | {version}")
     print(f"    Header Length:          5           | {ip_len_bytes} bytes")
     print(f"    Total Length:           {total_len_hex}        | {total_len_dec}")
-    print(f"    Flags & Frag Offset:    {flags_frag_hex}       | {hex(flags_frag)[2:].zfill(4)}")
+    print(f"    Flags & Frag Offset:    {flags_frag_hex}        | {hex(flags_frag)[2:].zfill(4)}")
     print(f"        Reserved:           {reserved}")
     print(f"        DF (Do not Fragment): {df_flag}")
     print(f"        MF (More Fragments): {mf_flag}")

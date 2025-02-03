@@ -178,48 +178,76 @@ def parse_ipv4_header(hex_data, offset=14):
 
 def parse_tcp_header(hex_data, offset=34):
     """
-    Minimal TCP parse. Typically offset=14+IPheader, but can vary with VLAN or IP options.
-    We'll print ports, seq, ack, offset, flags, etc.
+    Parse TCP header with all flags and fields matching the format.
     """
     base = offset * 2
     if len(hex_data) < base + 40:
         print("Truncated TCP header. Skipping.")
         return
 
-    src_port_hex  = hex_data[base : base+4]
-    dst_port_hex  = hex_data[base+4 : base+8]
-    seq_hex       = hex_data[base+8 : base+16]
-    ack_hex       = hex_data[base+16: base+24]
-    offs_flags    = hex_data[base+24: base+28]
-    win_hex       = hex_data[base+28: base+32]
-    csum_hex      = hex_data[base+32: base+36]
-    urgp_hex      = hex_data[base+36: base+40]
+    # Extract TCP fields
+    src_port_hex = hex_data[base : base+4]
+    dst_port_hex = hex_data[base+4 : base+8]
+    seq_hex = hex_data[base+8 : base+16]
+    ack_hex = hex_data[base+16 : base+24]
+    offset_flags_hex = hex_data[base+24 : base+28]
+    window_hex = hex_data[base+28 : base+32]
+    checksum_hex = hex_data[base+32 : base+36]
+    urgent_ptr_hex = hex_data[base+36 : base+40]
 
-    # Convert
-    sp_dec  = int(src_port_hex, 16)
-    dp_dec  = int(dst_port_hex, 16)
-    seq_dec = int(seq_hex, 16)
-    ack_dec = int(ack_hex, 16)
-
-    of_int      = int(offs_flags, 16)
-    data_offset = (of_int >> 12) & 0xF
-    flags_9     = of_int & 0x1FF
-    flags_bin   = bin(flags_9)[2:].zfill(9)
-
-    win_dec     = int(win_hex, 16)
-    csum_dec    = int(csum_hex, 16)
-    urgp_dec    = int(urgp_hex, 16)
+    # Convert values
+    src_port = int(src_port_hex, 16)
+    dst_port = int(dst_port_hex, 16)
+    seq_num = int(seq_hex, 16)
+    ack_num = int(ack_hex, 16)
+    
+    # Parse data offset and flags
+    offset_flags = int(offset_flags_hex, 16)
+    data_offset = (offset_flags >> 12) & 0xF
+    data_offset_bytes = data_offset * 4
+    
+    # TCP Flags
+    flags = offset_flags & 0x1FF
+    ns  = (flags >> 8) & 0x1
+    cwr = (flags >> 7) & 0x1
+    ece = (flags >> 6) & 0x1
+    urg = (flags >> 5) & 0x1
+    ack = (flags >> 4) & 0x1
+    psh = (flags >> 3) & 0x1
+    rst = (flags >> 2) & 0x1
+    syn = (flags >> 1) & 0x1
+    fin = flags & 0x1
+    
+    window = int(window_hex, 16)
+    checksum = int(checksum_hex, 16)
+    urgent_ptr = int(urgent_ptr_hex, 16)
 
     print("TCP Header:")
-    print(f"  {'Source Port:':<22} {src_port_hex:<6} | {sp_dec}")
-    print(f"  {'Destination Port:':<22} {dst_port_hex:<6} | {dp_dec}")
-    print(f"  {'Sequence Number:':<22} {seq_hex:<8} | {seq_dec}")
-    print(f"  {'Acknowledgment:':<22} {ack_hex:<8} | {ack_dec}")
-    print(f"  {'Data Offset:':<22} {offs_flags:<4} | {data_offset}")
-    print(f"  {'Flags (binary):':<22}        | {flags_bin}")
-    print(f"  {'Window:':<22} {win_hex:<6} | {win_dec}")
-    print(f"  {'Checksum:':<22} {csum_hex:<6} | {csum_dec}")
-    print(f"  {'Urgent Ptr:':<22} {urgp_hex:<6} | {urgp_dec}")
+    print(f"    Source Port:            {src_port_hex.lower()}      | {src_port}")
+    print(f"    Destination Port:       {dst_port_hex.lower()}      | {dst_port}")
+    print(f"    Sequence Number:        {seq_hex.lower()}      | {seq_num}")
+    print(f"    Acknowledgment Number:  {ack_hex.lower()}      | {ack_num}")
+    print(f"    Data Offset:           {data_offset}         | {data_offset_bytes} bytes")
+    print(f"    Reserved:              0b0       | 0")
+    print(f"    Flags:                 0b{bin(flags)[2:].zfill(9)}      | {flags}")
+    print(f"        NS:                {ns}")
+    print(f"        CWR:               {cwr}")
+    print(f"        ECE:               {ece}")
+    print(f"        URG:               {urg}")
+    print(f"        ACK:               {ack}")
+    print(f"        PSH:               {psh}")
+    print(f"        RST:               {rst}")
+    print(f"        SYN:               {syn}")
+    print(f"        FIN:               {fin}")
+    print(f"    Window Size:           {window_hex.lower()}      | {window}")
+    print(f"    Checksum:              {checksum_hex.lower()}      | {checksum}")
+    print(f"    Urgent Pointer:        {urgent_ptr_hex.lower()}      | {urgent_ptr}")
+
+    # Print payload if present
+    payload_start = base + (data_offset * 8)  # data_offset is in 4-byte words
+    if len(hex_data) > payload_start:
+        payload = hex_data[payload_start:]
+        print(f"    Payload (hex):          {payload.lower()}")
 
 
 def parse_udp_header(hex_data, offset):

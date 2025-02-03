@@ -243,7 +243,6 @@ def parse_tcp_header(hex_data, offset=34):
     print(f"    {'Checksum:':<22} {checksum_hex.lower():<12} | {checksum}")
     print(f"    {'Urgent Pointer:':<22} {urgent_ptr_hex.lower():<12} | {urgent_ptr}")
 
-    # Print payload if present
     payload_start = base + (data_offset * 8)
     if len(hex_data) > payload_start:
         payload = hex_data[payload_start:]

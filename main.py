@@ -1,7 +1,7 @@
 import argparse
 from scapy.all import AsyncSniffer, get_if_list, conf
 from threading import Thread, Lock, Event
-from packet_parsers import parse_ethernet_header
+from packet_parsers import parse_ethernet_header, parse_dns_packet
 import socket
 import psutil
 

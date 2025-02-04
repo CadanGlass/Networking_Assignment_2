@@ -8,13 +8,13 @@ def parse_ethernet_header(hex_data):
     Handles standard Ethernet II frames, VLAN tagged frames, and common protocols like ARP and IPv4.
     """
     # Split the header into its components
-    dest_mac_hex = hex_data[0:12]   
-    src_mac_hex  = hex_data[12:24]  
-    ether_type   = hex_data[24:28]  
+    dest_mac_hex = hex_data[0:12]
+    src_mac_hex = hex_data[12:24]
+    ether_type = hex_data[24:28]
 
     # Format MAC addresses into human readable format (e.g., AA:BB:CC:DD:EE:FF)
-    dest_mac = ':'.join(dest_mac_hex[i:i+2] for i in range(0, 12, 2))
-    src_mac  = ':'.join(src_mac_hex[i:i+2] for i in range(0, 12, 2))
+    dest_mac = ':'.join(dest_mac_hex[i:i + 2] for i in range(0, 12, 2))
+    src_mac = ':'.join(src_mac_hex[i:i + 2] for i in range(0, 12, 2))
     ether_type_dec = int(ether_type, 16)
 
     print("Ethernet Header:")
@@ -32,9 +32,9 @@ def parse_ethernet_header(hex_data):
             print("Truncated VLAN header. Cannot parse further.")
             return ether_type, payload
 
-        vlan_tag   = hex_data[28:36]   # 4 bytes => 8 hex
-        real_etype = hex_data[36:40]   # next 2 bytes => 4 hex
-        real_dec   = int(real_etype, 16)
+        vlan_tag = hex_data[28:36]  # 4 bytes => 8 hex
+        real_etype = hex_data[36:40]  # next 2 bytes => 4 hex
+        real_dec = int(real_etype, 16)
 
         print(f"  VLAN Tag Detected:       {vlan_tag}")
         print(f"  Real EtherType:          {real_etype:<12} | {real_dec}")
@@ -75,30 +75,30 @@ def parse_arp_header(hex_data, arp_offset=14):
 
     base = arp_offset * 2
 
-    hw_type    = hex_data[base     : base + 4]    # 2 bytes
-    proto_type = hex_data[base + 4 : base + 8]    # 2 bytes
-    hw_size    = hex_data[base + 8 : base + 10]   # 1 byte
-    proto_size = hex_data[base +10 : base + 12]   # 1 byte
-    opcode     = hex_data[base +12 : base + 16]   # 2 bytes
+    hw_type = hex_data[base: base + 4]  # 2 bytes
+    proto_type = hex_data[base + 4: base + 8]  # 2 bytes
+    hw_size = hex_data[base + 8: base + 10]  # 1 byte
+    proto_size = hex_data[base + 10: base + 12]  # 1 byte
+    opcode = hex_data[base + 12: base + 16]  # 2 bytes
 
-    sender_mac = hex_data[base +16 : base + 28]   # 6 bytes
-    sender_ip  = hex_data[base +28 : base + 36]   # 4 bytes
-    target_mac = hex_data[base +36 : base + 48]   # 6 bytes
-    target_ip  = hex_data[base +48 : base + 56]   # 4 bytes
+    sender_mac = hex_data[base + 16: base + 28]  # 6 bytes
+    sender_ip = hex_data[base + 28: base + 36]  # 4 bytes
+    target_mac = hex_data[base + 36: base + 48]  # 6 bytes
+    target_ip = hex_data[base + 48: base + 56]  # 4 bytes
 
     # Convert
-    hw_type_dec    = int(hw_type, 16)
+    hw_type_dec = int(hw_type, 16)
     proto_type_dec = int(proto_type, 16)
-    hw_size_dec    = int(hw_size, 16)
+    hw_size_dec = int(hw_size, 16)
     proto_size_dec = int(proto_size, 16)
-    opcode_dec     = int(opcode, 16)
+    opcode_dec = int(opcode, 16)
 
-    sender_mac_read = ':'.join(sender_mac[i:i+2] for i in range(0, 12, 2))
-    target_mac_read = ':'.join(target_mac[i:i+2] for i in range(0, 12, 2))
+    sender_mac_read = ':'.join(sender_mac[i:i + 2] for i in range(0, 12, 2))
+    target_mac_read = ':'.join(target_mac[i:i + 2] for i in range(0, 12, 2))
 
     try:
-        sender_ip_read = '.'.join(str(int(sender_ip[i:i+2], 16)) for i in range(0, 8, 2))
-        target_ip_read = '.'.join(str(int(target_ip[i:i+2], 16)) for i in range(0, 8, 2))
+        sender_ip_read = '.'.join(str(int(sender_ip[i:i + 2], 16)) for i in range(0, 8, 2))
+        target_ip_read = '.'.join(str(int(target_ip[i:i + 2], 16)) for i in range(0, 8, 2))
     except ValueError:
         print("Invalid ARP IP fields.")
         return
@@ -127,12 +127,12 @@ def parse_ipv4_header(hex_data, offset=14):
         return
 
     # Pull out the header fields we care about
-    version_ihl_hex = hex_data[base : base + 2]
-    total_len_hex = hex_data[base + 4 : base + 8]
-    flags_frag_hex = hex_data[base + 12 : base + 16]
-    proto_hex = hex_data[base + 18 : base + 20]
-    src_ip_hex = hex_data[base + 24 : base + 32]
-    dst_ip_hex = hex_data[base + 32 : base + 40]
+    version_ihl_hex = hex_data[base: base + 2]
+    total_len_hex = hex_data[base + 4: base + 8]
+    flags_frag_hex = hex_data[base + 12: base + 16]
+    proto_hex = hex_data[base + 18: base + 20]
+    src_ip_hex = hex_data[base + 24: base + 32]
+    dst_ip_hex = hex_data[base + 32: base + 40]
 
     # First byte contains both version (upper 4 bits) and header length (lower 4 bits)
     vi = int(version_ihl_hex, 16)
@@ -150,8 +150,8 @@ def parse_ipv4_header(hex_data, offset=14):
     proto_dec = int(proto_hex, 16)
 
     # Convert IPs to dotted decimal
-    src_ip = '.'.join(str(int(src_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
-    dst_ip = '.'.join(str(int(dst_ip_hex[i:i+2], 16)) for i in range(0, 8, 2))
+    src_ip = '.'.join(str(int(src_ip_hex[i:i + 2], 16)) for i in range(0, 8, 2))
+    dst_ip = '.'.join(str(int(dst_ip_hex[i:i + 2], 16)) for i in range(0, 8, 2))
 
     print("IPv4 Header:")
     print(f"    Version:                4           | {version}")
@@ -189,14 +189,14 @@ def parse_tcp_header(hex_data, offset=34):
         return
 
     # Extract the main TCP header fields
-    src_port_hex = hex_data[base : base+4]
-    dst_port_hex = hex_data[base+4 : base+8]
-    seq_hex = hex_data[base+8 : base+16]
-    ack_hex = hex_data[base+16 : base+24]
-    offset_flags_hex = hex_data[base+24 : base+28]
-    window_hex = hex_data[base+28 : base+32]
-    checksum_hex = hex_data[base+32 : base+36]
-    urgent_ptr_hex = hex_data[base+36 : base+40]
+    src_port_hex = hex_data[base: base + 4]
+    dst_port_hex = hex_data[base + 4: base + 8]
+    seq_hex = hex_data[base + 8: base + 16]
+    ack_hex = hex_data[base + 16: base + 24]
+    offset_flags_hex = hex_data[base + 24: base + 28]
+    window_hex = hex_data[base + 28: base + 32]
+    checksum_hex = hex_data[base + 32: base + 36]
+    urgent_ptr_hex = hex_data[base + 36: base + 40]
 
     # Convert all values
     src_port = int(src_port_hex, 16)
@@ -206,13 +206,13 @@ def parse_tcp_header(hex_data, offset=34):
     window = int(window_hex, 16)
     checksum = int(checksum_hex, 16)
     urgent_ptr = int(urgent_ptr_hex, 16)
-    
+
     offset_flags = int(offset_flags_hex, 16)
     data_offset = (offset_flags >> 12) & 0xF
     data_offset_bytes = data_offset * 4
-    
+
     flags = offset_flags & 0x1FF
-    ns  = (flags >> 8) & 0x1
+    ns = (flags >> 8) & 0x1
     cwr = (flags >> 7) & 0x1
     ece = (flags >> 6) & 0x1
     urg = (flags >> 5) & 0x1
@@ -229,7 +229,7 @@ def parse_tcp_header(hex_data, offset=34):
     print(f"    {'Acknowledgment Number:':<22} {ack_hex.lower():<12} | {ack_num}")
     print(f"    {'Data Offset:':<22} {data_offset:<12} | {data_offset_bytes} bytes")
     print(f"    {'Reserved:':<22} {'0b0':<12} | 0")
-    print(f"    {'Flags:':<22} {'0b'+bin(flags)[2:].zfill(9):<12} | {flags}")
+    print(f"    {'Flags:':<22} {'0b' + bin(flags)[2:].zfill(9):<12} | {flags}")
     print(f"    {'    NS:':<22} {ns:<12} | {ns}")
     print(f"    {'    CWR:':<22} {cwr:<12} | {cwr}")
     print(f"    {'    ECE:':<22} {ece:<12} | {ece}")
@@ -248,6 +248,12 @@ def parse_tcp_header(hex_data, offset=34):
         payload = hex_data[payload_start:]
         print(f"    Payload (hex):          {payload.lower()}")
 
+    # Check if this is DNS traffic (port 53)
+    if src_port == 53 or dst_port == 53:
+        # For TCP DNS, first 2 bytes indicate length
+        dns_offset = offset + data_offset
+        parse_dns_packet(hex_data, dns_offset)
+
 
 def parse_udp_header(hex_data, offset):
     """
@@ -260,22 +266,27 @@ def parse_udp_header(hex_data, offset):
         return
 
     # UDP has a simple 8-byte header with just ports, length, and checksum
-    src_port_hex = hex_data[base : base + 4]
-    dst_port_hex = hex_data[base + 4 : base + 8]
-    length_hex   = hex_data[base + 8 : base + 12]
-    csum_hex     = hex_data[base + 12 : base + 16]
+    src_port_hex = hex_data[base: base + 4]
+    dst_port_hex = hex_data[base + 4: base + 8]
+    length_hex = hex_data[base + 8: base + 12]
+    csum_hex = hex_data[base + 12: base + 16]
 
     # Convert hex -> decimal
     src_port_dec = int(src_port_hex, 16)
     dst_port_dec = int(dst_port_hex, 16)
-    length_dec   = int(length_hex, 16)
-    csum_dec     = int(csum_hex, 16)
+    length_dec = int(length_hex, 16)
+    csum_dec = int(csum_hex, 16)
 
     print("UDP Header:")
     print(f"    Source Port:            {src_port_hex.lower()}        | {src_port_dec}")
     print(f"    Destination Port:       {dst_port_hex.lower()}        | {dst_port_dec}")
     print(f"    Length:                 {length_hex.lower()}        | {length_dec}")
     print(f"    Checksum:               {csum_hex.lower()}        | {csum_dec}")
+
+    # Check if this is DNS traffic (port 53)
+    if src_port_dec == 53 or dst_port_dec == 53:
+        # DNS starts immediately after UDP header
+        parse_dns_packet(hex_data, offset + 8)
 
     # Remainder of packet is UDP payload
     payload_start = base + 16
@@ -295,9 +306,9 @@ def parse_icmp_header(hex_data, offset=34):
         return
 
     # ICMP header starts with type and code that indicate the message purpose
-    type_hex = hex_data[base : base + 2]
-    code_hex = hex_data[base + 2 : base + 4]
-    checksum_hex = hex_data[base + 4 : base + 8]
+    type_hex = hex_data[base: base + 2]
+    code_hex = hex_data[base + 2: base + 4]
+    checksum_hex = hex_data[base + 4: base + 8]
 
     # Convert to decimal
     type_dec = int(type_hex, 16)
@@ -312,3 +323,48 @@ def parse_icmp_header(hex_data, offset=34):
     print(f"    {'Code:':<22} {code_hex:<12} | {code_dec}")
     print(f"    {'Checksum:':<22} {checksum_hex:<12} | {checksum_dec}")
     print(f"    {'Payload (hex):':<22} {payload.lower()}")
+
+
+def parse_dns_packet(hex_data, offset):
+    """
+    Parses DNS packets, supporting both queries and responses.
+    DNS packets can be carried over either UDP or TCP on port 53.
+    """
+    base = offset * 2
+    if len(hex_data) < base + 24:  # Minimum DNS header size is 12 bytes
+        print("Truncated DNS packet. Skipping.")
+        return
+
+    # Extract DNS header fields
+    transaction_id = hex_data[base:base + 4]
+    flags = int(hex_data[base + 4:base + 8], 16)
+    questions = int(hex_data[base + 8:base + 12], 16)
+    answers = int(hex_data[base + 12:base + 16], 16)
+    authority = int(hex_data[base + 16:base + 20], 16)
+    additional = int(hex_data[base + 20:base + 24], 16)
+
+    # Parse DNS flags
+    qr = (flags >> 15) & 0x1  # Query (0) or Response (1)
+    opcode = (flags >> 11) & 0xF  # Operation code
+    aa = (flags >> 10) & 0x1  # Authoritative Answer
+    tc = (flags >> 9) & 0x1  # Truncation
+    rd = (flags >> 8) & 0x1  # Recursion Desired
+    ra = (flags >> 7) & 0x1  # Recursion Available
+    z = (flags >> 4) & 0x7  # Reserved
+    rcode = flags & 0xF  # Response code
+
+    print("DNS Header:")
+    print(f"    Transaction ID:         {transaction_id}        | {int(transaction_id, 16)}")
+    print(f"    Flags:                  {hex(flags)[2:].zfill(4)}")
+    print(f"        QR:                 {qr}           | {'Response' if qr else 'Query'}")
+    print(f"        Opcode:             {opcode}")
+    print(f"        AA:                 {aa}")
+    print(f"        TC:                 {tc}")
+    print(f"        RD:                 {rd}")
+    print(f"        RA:                 {ra}")
+    print(f"        Z:                  {z}")
+    print(f"        RCODE:              {rcode}")
+    print(f"    Questions:              {questions}")
+    print(f"    Answer RRs:             {answers}")
+    print(f"    Authority RRs:          {authority}")
+    print(f"    Additional RRs:         {additional}")
